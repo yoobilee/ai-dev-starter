@@ -89,6 +89,7 @@
 - 버그·실패 원인 분석: `.ai/policies/debugging.md`
 - 위험도·테스트·독립 검증·CI 기준: `.ai/policies/verification.md`
 - 리뷰 자동화 도입·변경: `.ai/policies/review-automation.md`
+- 멀티 에이전트 실시간 협업 도입·변경: `.ai/policies/multi-agent-collaboration.md`
 - 중간·높은 위험 작업 계획: `.ai/templates/WORK_PLAN.md`
 - Agent 전환: `.ai/templates/HANDOFF.md`
 - PR 작성: `.github/pull_request_template.md`
@@ -139,6 +140,17 @@
 - 이중 기록 대상·기준 시스템·정합성 확인 방식: 해당 없음
 
 자동화를 도입할 때만 위 설정을 확정한다. 특정 도구의 관찰된 동작을 다른 도구의 공통 사양으로 간주하지 않는다.
+
+### 멀티 에이전트 협업 설정
+
+- 사용 여부: 미사용 (필요 시 `.ai/policies/multi-agent-collaboration.md` 참고해 도입)
+- 참여 Agent·기본 역할 배정: 해당 없음
+- 채팅 도구·연동 방식: 해당 없음
+- 동일 쟁점 최대 논의 횟수·동일 PR·파일 수정 라운드 상한: 해당 없음
+- 채팅 스레드-작업 매핑 방식·상태 저장 위치: 해당 없음
+- 허용 채널·사용자 목록: 해당 없음
+
+자동화를 도입할 때만 위 설정을 확정한다.
 
 ### 추가 규칙
 
