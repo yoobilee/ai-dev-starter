@@ -70,6 +70,8 @@
 - 자동 병합은 기본값으로 사용하지 않는다.
 - 높은 위험의 변경은 구현에 참여하지 않은 다른 AI Agent의 독립 검증을 거친다. 같은 AI의 자체 검토는 독립 검증이 아니다.
 - AI 리뷰에서 문제가 발견되면 구현 Agent가 수정하고 CI를 다시 통과해야 한다.
+- 여러 Agent가 협업하는 프로젝트는 `.ai/policies/multi-agent-collaboration.md`를 적용한다. 역할, 전달 경로와 사용자 판단 경계를 먼저 확정한다.
+- 자동 논의·수정·재검증이 이어지는 대규모 협업은 `.ai/templates/MULTI_AGENT_WORKFLOW.md`를 복사해 프로젝트별 실행 구조와 안전장치를 설계한 뒤 도입한다.
 - `.github/workflows/` 등 CI/CD 변경은 높은 위험으로 취급하며 자동 수정·자동 병합하지 않는다.
 - 자동화 조건은 fail-closed로 처리한다. 값 누락, 예상하지 못한 상태와 명령 실패는 사람 확인 상태로 둔다.
 - 리뷰 자동화를 도입하거나 변경할 때만 `.ai/policies/review-automation.md`를 적용한다. 자동화를 사용하지 않아도 필요한 독립 AI 검증은 수행한다.
@@ -88,6 +90,8 @@
 
 - 새 프로젝트 설정: `.ai/checklists/project-init.md`
 - 새 화면·UI 개편의 디자인 방향: `.ai/policies/design-direction.md`
+- 여러 Agent 협업: `.ai/policies/multi-agent-collaboration.md`
+- 대규모 멀티 Agent 실행 설계: `.ai/templates/MULTI_AGENT_WORKFLOW.md`
 - 버그·실패 원인 분석: `.ai/policies/debugging.md`
 - 위험도·테스트·독립 검증·CI 기준: `.ai/policies/verification.md`
 - 리뷰 자동화 도입·변경: `.ai/policies/review-automation.md`
@@ -148,6 +152,16 @@
 - 이중 기록 대상·기준 시스템·정합성 확인 방식: 해당 없음
 
 자동화를 도입할 때만 위 설정을 확정한다. 특정 도구의 관찰된 동작을 다른 도구의 공통 사양으로 간주하지 않는다.
+
+### 멀티 Agent 협업 설정
+
+- 사용 여부: 미사용
+- 역할 분담과 대체 순서: 해당 없음
+- 이슈 전달·논의 경로와 기준 기록: 해당 없음
+- 자동 진행 범위와 사용자 판단 필요 조건: 해당 없음
+- 결과 보고·인계 형식: `HANDOFF.md`와 PR
+
+협업을 도입할 때만 위 설정을 확정한다. 특정 AI, 채널 또는 자동화 도구를 기본값으로 고정하지 않는다.
 
 ### 추가 규칙
 
