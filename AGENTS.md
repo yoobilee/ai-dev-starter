@@ -27,6 +27,7 @@
 4. 시안이 없으면 시각적 방향을 임의로 확정하지 않고 사용자 의견을 확인한다.
 5. Git 저장소에서는 수정 전에 새 작업 브랜치를 만든다.
 6. 작업 위험도를 낮음·중간·높음 중 하나로 판단한다. 세부 기준은 `.ai/policies/verification.md`를 따른다.
+- 새 화면이나 큰 UI 개편은 `.ai/policies/design-direction.md`에 따라 레퍼런스 편향을 피하고 시각적 방향을 먼저 확정한다.
 
 ## 작업 방식 선택
 
@@ -69,6 +70,8 @@
 - 자동 병합은 기본값으로 사용하지 않는다.
 - 높은 위험의 변경은 구현에 참여하지 않은 다른 AI Agent의 독립 검증을 거친다. 같은 AI의 자체 검토는 독립 검증이 아니다.
 - AI 리뷰에서 문제가 발견되면 구현 Agent가 수정하고 CI를 다시 통과해야 한다.
+- 여러 Agent가 협업하는 프로젝트는 `.ai/policies/multi-agent-collaboration.md`를 적용한다. 역할, 전달 경로와 사용자 판단 경계를 먼저 확정한다.
+- 자동 논의·수정·재검증이 이어지는 대규모 협업은 `.ai/templates/MULTI_AGENT_WORKFLOW.md`를 복사해 프로젝트별 실행 구조와 안전장치를 설계한 뒤 도입한다.
 - `.github/workflows/` 등 CI/CD 변경은 높은 위험으로 취급하며 자동 수정·자동 병합하지 않는다.
 - 자동화 조건은 fail-closed로 처리한다. 값 누락, 예상하지 못한 상태와 명령 실패는 사람 확인 상태로 둔다.
 - 리뷰 자동화를 도입하거나 변경할 때만 `.ai/policies/review-automation.md`를 적용한다. 자동화를 사용하지 않아도 필요한 독립 AI 검증은 수행한다.
@@ -86,10 +89,12 @@
 ## 프로젝트 규칙 라우팅
 
 - 새 프로젝트 설정: `.ai/checklists/project-init.md`
+- 새 화면·UI 개편의 디자인 방향: `.ai/policies/design-direction.md`
+- 여러 Agent 협업: `.ai/policies/multi-agent-collaboration.md`
+- 대규모 멀티 Agent 실행 설계: `.ai/templates/MULTI_AGENT_WORKFLOW.md`
 - 버그·실패 원인 분석: `.ai/policies/debugging.md`
 - 위험도·테스트·독립 검증·CI 기준: `.ai/policies/verification.md`
 - 리뷰 자동화 도입·변경: `.ai/policies/review-automation.md`
-- 멀티 에이전트 실시간 협업 도입·변경: `.ai/policies/multi-agent-collaboration.md`
 - 중간·높은 위험 작업 계획: `.ai/templates/WORK_PLAN.md`
 - Agent 전환: `.ai/templates/HANDOFF.md`
 - PR 작성: `.github/pull_request_template.md`
@@ -111,6 +116,13 @@
 - 커버리지 정책: 초기 미사용
 - 백로그 위치: GitHub Issues 또는 필요 시 `.ai/BACKLOG.md`
 - 레퍼런스 출처: 없음
+
+### 디자인 방향
+
+- 디자인 시스템 사용 여부·선택 이유: 미정
+- 브랜드 고유 요소와 유지할 자산: 미정
+- 화면 밀도·정보 계층·시각적 분위기: 미정
+- 참고 범위와 피할 표현: 미정
 
 ### 명령
 
@@ -141,16 +153,15 @@
 
 자동화를 도입할 때만 위 설정을 확정한다. 특정 도구의 관찰된 동작을 다른 도구의 공통 사양으로 간주하지 않는다.
 
-### 멀티 에이전트 협업 설정
+### 멀티 Agent 협업 설정
 
-- 사용 여부: 미사용 (필요 시 `.ai/policies/multi-agent-collaboration.md` 참고해 도입)
-- 참여 Agent·기본 역할 배정: 해당 없음
-- 채팅 도구·연동 방식: 해당 없음
-- 동일 쟁점 최대 논의 횟수·동일 PR·파일 수정 라운드 상한: 해당 없음
-- 채팅 스레드-작업 매핑 방식·상태 저장 위치: 해당 없음
-- 허용 채널·사용자 목록: 해당 없음
+- 사용 여부: 미사용
+- 역할 분담과 대체 순서: 해당 없음
+- 이슈 전달·논의 경로와 기준 기록: 해당 없음
+- 자동 진행 범위와 사용자 판단 필요 조건: 해당 없음
+- 결과 보고·인계 형식: `HANDOFF.md`와 PR
 
-자동화를 도입할 때만 위 설정을 확정한다.
+협업을 도입할 때만 위 설정을 확정한다. 특정 AI, 채널 또는 자동화 도구를 기본값으로 고정하지 않는다.
 
 ### 추가 규칙
 
