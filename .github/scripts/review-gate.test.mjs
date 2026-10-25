@@ -151,3 +151,75 @@ test('프롬프트·체크리스트·내부 액션은 고위험이고 block.ts�
   }
   assert.equal(describe(p,[{filename:'src/block.ts'}],config).needsReview,false);
 });
+
+// 정상 PR을 실패 PR 앞뒤에 배치해 판정과 후속 처리가 모두 격리되는지 확인한다.
+async function multiplePRs({invalid='draft',cleanupFailure=false,createFailure=false}={}) {
+  const prs=[1,2,3].map(number=>({...pr(),number,head:{sha:String(number).repeat(40)}}));
+  if (invalid==='draft') prs[1].draft=true;
+  if (invalid==='title') prs[1].title='chore: automated dependency update';
+  if (invalid==='metadata') prs[1].body='metadata 없음';
+  const checks=new Map();
+  const evaluated=[];
+  let failure=false;
+  let summaryWritten=false;
+  const github={rest:{
+    pulls:{
+      list:async()=>({data:prs}),
+      get:async args=>({data:prs.find(p=>p.number===args.pull_number)}),
+      listFiles:async args=>{evaluated.push(args.pull_number);return {data:files};},
+      listReviews:async()=>({data:[]}),
+    },
+    issues:{listComments:async args=>{
+      const p=prs.find(p=>p.number===args.issue_number);
+      const d=describe(p,files,config);
+      const c={...confirmationFor(d),evidence:`https://github.com/owner/repo/pull/${p.number}#issuecomment-10`};
+      const user={id:1,login:'maintainer',type:'User'};
+      return {data:[{id:10,user,body:reportFor(d)},{id:11,user,body:`/review-gate\n\`\`\`json\n${JSON.stringify(c)}\n\`\`\``}]};
+    }},
+    repos:{getCollaboratorPermissionLevel:async()=>({data:{permission:'admin'}})},
+    checks:{
+      create:async value=>{
+        const p=prs.find(p=>p.head.sha===value.head_sha);
+        if (p.number===2 && createFailure) throw new Error('check 생성 실패');
+        checks.set(p.number,{...value,id:p.number});return {data:{id:p.number}};
+      },
+      update:async value=>{
+        if (value.check_run_id===2 && cleanupFailure && value.conclusion==='failure') throw new Error('실패 check 게시 실패');
+        checks.set(value.check_run_id,{...checks.get(value.check_run_id),...value});
+      },
+    },
+  },paginate:async(fn,args)=>(await fn(args)).data};
+  const summary={addHeading(){return this;},addRaw(){return this;},addCodeBlock(){return this;},async write(){summaryWritten=true;}};
+  await runGate({github,context:{repo:{owner:'owner',repo:'repo'},payload:{},eventName:'push',runId:42},core:{summary,setFailed(){failure=true;}}});
+  return {checks,failure,summaryWritten,evaluated};
+}
+
+test('정상 PR과 draft·영문 제목·metadata 없는 PR이 공존해도 정상 PR은 통과',async()=>{
+  for (const invalid of ['draft','title','metadata']) {
+    const r=await multiplePRs({invalid});
+    assert.equal(r.checks.get(1).conclusion,'success',invalid);
+    assert.equal(r.checks.get(2).conclusion,'failure',invalid);
+    assert.equal(r.checks.get(3).conclusion,'success',invalid);
+    assert.equal(r.failure,false,invalid);
+    assert.equal(r.summaryWritten,true);
+  }
+});
+
+test('실패 check 게시 오류에도 이후 PR과 Summary를 처리하고 실행 오류를 보고',async()=>{
+  const r=await multiplePRs({cleanupFailure:true});
+  assert.equal(r.checks.get(1).conclusion,'success');
+  assert.equal(r.checks.get(2).status,'in_progress');
+  assert.equal(r.checks.get(2).conclusion,undefined);
+  assert.equal(r.checks.get(3).conclusion,'success');
+  assert.ok(r.evaluated.includes(3));
+  assert.equal(r.summaryWritten,true);
+  assert.equal(r.failure,true);
+});
+
+test('check 생성 오류도 성공으로 바꾸지 않고 이후 PR 평가를 계속함',async()=>{
+  const r=await multiplePRs({createFailure:true});
+  assert.equal(r.checks.has(2),false);
+  assert.equal(r.checks.get(3).conclusion,'success');
+  assert.equal(r.summaryWritten,true);
+  assert.equal(r.failure,true);
+});

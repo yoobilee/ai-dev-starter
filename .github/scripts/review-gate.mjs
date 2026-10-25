@@ -74,11 +74,22 @@ export async function runGate({github,context,core}) {
       // 병합 여부는 PR head의 check가 결정한다. 다른 PR의 실패 때문에
       // 정상적으로 평가된 PR의 workflow 출처까지 실패로 만들지 않는다.
     } catch {
-      failed=true;
-      if (check) await github.rest.checks.update({...repo,check_run_id:check,status:'completed',conclusion:'failure',output:{title:'사람 확인 필요',summary:'조회·형식·권한·최신성 오류가 발생했습니다.'}});
+      // 실패 check를 정상 게시했으면 해당 PR만 차단한다. draft·제목·
+      // metadata 오류가 다른 정상 PR의 workflow 출처까지 무효화하면 안 된다.
+      // check 생성·실패 게시 자체가 불가능한 경우에만 실행 전체를 실패시킨다.
+      if (!check) {
+        failed=true;
+      } else {
+        try {
+          await github.rest.checks.update({...repo,check_run_id:check,status:'completed',conclusion:'failure',output:{title:'사람 확인 필요',summary:'조회·형식·권한·최신성 오류가 발생했습니다.'}});
+        } catch {
+          failed=true;
+          core.summary.addRaw(`\nPR #${item.number}: 실패 check 게시도 실패했습니다. 해당 검사는 통과가 아닙니다.\n`);
+        }
+      }
       core.summary.addRaw(`\nPR #${item.number}: 확인 실패.\n`);
     }
   }
   await core.summary.write();
-  if (failed) core.setFailed('필수 독립 리뷰 또는 사람 확인 조건이 충족되지 않았습니다.');
+  if (failed) core.setFailed('일부 PR의 check 생성 또는 실패 결과 게시에 실패했습니다.');
 }
