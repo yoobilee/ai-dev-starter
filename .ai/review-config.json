@@ -1,0 +1,13 @@
+{
+  "statusContext": "independent-review",
+  "defaultReviewer": "codex",
+  "reviewAllMedium": true,
+  "highRiskPaths": [
+    ".github/workflows",
+    ".github/scripts",
+    ".ai/policies",
+    ".ai/review-config.json",
+    "AGENTS.md",
+    "CLAUDE.md"
+  ]
+}
