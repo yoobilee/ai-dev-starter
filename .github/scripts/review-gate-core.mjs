@@ -35,15 +35,16 @@ export function describe(pr, files, config) {
   if (!files.length) throw new Error('변경 파일 조회 결과가 비어 있습니다.');
   const paths = files.flatMap(file => [file.filename, file.previous_filename].filter(Boolean));
   const high = paths.some(path => config.highRiskPaths.some(prefix => path === prefix || path.startsWith(prefix.endsWith('/') ? prefix : `${prefix}/`)));
-  const dependency = paths.some(path => /(^|\/)(package\.json|.*lock.*|requirements.*\.txt|pyproject\.toml|Cargo\.toml|go\.mod)$/.test(path));
+  const dependency = paths.some(path => /(^|\/)(package\.json|package-lock\.json|npm-shrinkwrap\.json|pnpm-lock\.yaml|yarn\.lock|bun\.lockb?|requirements[^/]*\.txt|poetry\.lock|uv\.lock|Pipfile\.lock|pyproject\.toml|Cargo\.(toml|lock)|go\.(mod|sum)|Gemfile(\.lock)?|composer\.(json|lock))$/.test(path));
   const risk = high || meta.risk === 'high' ? 'high' : meta.risk;
   const required = risk !== 'low' && (risk === 'high' || meta['sensitive-change'] === 'yes' || dependency || config.reviewAllMedium);
   // 보안 관련 변경을 low로 입력해 리뷰를 우회하지 않는다.
   const needsReview = required || meta['sensitive-change'] === 'yes' || dependency;
-  const reviewer = meta['implemented-by'] === 'codex' ? 'claude' : config.defaultReviewer;
+  const reviewer = meta['implemented-by'] === 'codex' ? 'claude'
+    : meta['implemented-by'] === 'claude' ? 'codex' : config.defaultReviewer;
   if (!['claude', 'codex'].includes(reviewer) || reviewer === meta['implemented-by']) throw new Error('독립 reviewer 선택 오류');
   const fingerprint = sha256(JSON.stringify({
-    head: pr.head.sha, base: pr.base.sha, title: pr.title, meta, risk, config,
+    head: pr.head.sha, base: pr.base.sha, title: pr.title, body: pr.body ?? '', meta, risk, config,
     files: files.map(file => [file.filename, file.previous_filename ?? null, file.status]).sort(),
   }));
   return { meta, risk, needsReview, reviewer, fingerprint, head: pr.head.sha, base: pr.base.sha };
@@ -76,9 +77,25 @@ export function decide(description, confirmation, evidence) {
     return { state: 'failure', reason: '지적사항 집계 오류' };
   }
   if (counts.critical || counts.high || counts.medium) return { state: 'failure', reason: '미해결 차단 지적 또는 medium 사람 판단 필요' };
-  if (!evidence || evidence.hash !== confirmation.evidenceHash || !evidence.body.includes(description.head) || !evidence.body.includes(description.base)) {
+  if (!evidence || !evidence.body.startsWith('# 독립 리뷰 보고서\n') || evidence.hash !== confirmation.evidenceHash || !evidence.body.includes(description.head) || !evidence.body.includes(description.base)) {
     return { state: 'failure', reason: '리뷰 근거 누락·변경 또는 대상 SHA 불일치' };
   }
-  if (evidence.dismissed || (evidence.commit && evidence.commit !== description.head)) return { state: 'failure', reason: '이전 또는 기각된 리뷰' };
   return { state: 'success', reason: '최신 변경의 독립 리뷰 결과를 사람이 확인함' };
+}
+
+export function validateConfig(config) {
+  if (!config || config.checkName !== 'independent-review'
+      || !['claude', 'codex'].includes(config.defaultReviewer)
+      || typeof config.reviewAllMedium !== 'boolean'
+      || !Array.isArray(config.highRiskPaths) || !config.highRiskPaths.length
+      || config.highRiskPaths.some(path => typeof path !== 'string' || !path.trim())) throw new Error('리뷰 설정 오류');
+}
+
+// 댓글과 새 커밋은 변경 요청을 해제하지 않는다. 기각된 리뷰 자체만 제외한다.
+export function blockingReviews(reviews) {
+  const opinions = new Map();
+  for (const review of [...reviews].sort((a,b) => Number(a.id)-Number(b.id))) {
+    if (['APPROVED','CHANGES_REQUESTED'].includes(review.state)) opinions.set(review.user.id,review);
+  }
+  return [...opinions.values()].filter(review => review.state === 'CHANGES_REQUESTED');
 }

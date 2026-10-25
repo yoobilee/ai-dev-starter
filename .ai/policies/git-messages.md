@@ -29,8 +29,10 @@ PowerShell 또는 Git Bash에서 같은 Node 명령을 사용할 수 있다.
 node .github/scripts/merge-pr.mjs owner/repo PR번호 squash
 ```
 
-`merge`를 선택하려면 마지막 인수를 `merge`로 바꾼다. v1 게이트의 상태 이름은 `independent-review`로 고정한다. 이름 변경은 정책·workflow·브랜치 보호·병합 도구를 함께 변경하는 별도 높은 위험 작업이다.
+`merge`를 선택하려면 마지막 인수를 `merge`로 바꾼다. v1 게이트의 check run 이름은 `independent-review`로 고정한다. 이름 변경은 정책·workflow·브랜치 보호·병합 도구를 함께 변경하는 별도 높은 위험 작업이다.
 
-이 도구는 필수 검사, 기본 게이트, head 일치와 실제 저장 제목을 검증한다. 사람 승인은 GitHub 브랜치 보호로 강제하며 도구의 성공만으로 사람 승인 조건을 대체하지 않는다. CLI 응답·인증값은 오류 로그에 출력하지 않는다.
+이 도구는 기본 브랜치 대상 여부, 필수 검사, GitHub Actions 앱·승인된 workflow 출처, 최신 fingerprint와 실제 리뷰 근거를 검증한다. 병합 직전에 본문·base/head·관리자 확인·리뷰를 다시 조회한다. branch protection API에서 strict required checks와 검사 게시 앱 고정을 확인할 수 없으면 병합하지 않는다. 확인과 병합 사이 base 경쟁의 최종 방어는 이 GitHub 보호 설정이며, `--match-head-commit`만으로 base를 원자적으로 고정할 수 있다고 표현하지 않는다.
+
+사람 승인은 GitHub 브랜치 보호로 강제하며 도구의 성공만으로 사람 승인 조건을 대체하지 않는다. CLI 응답·인증값은 오류 로그에 출력하지 않는다.
 
 브라우저에서 병합할 때도 제목을 직접 확인하고 병합 후 같은 PR의 커밋을 조회한다. 로컬 기본 브랜치를 pull했다는 사실만으로 제목 검증을 대체하지 않는다.

@@ -4,7 +4,7 @@ name: Independent review gate
 # 기본 브랜치의 승인된 게이트 코드만 읽기 위해 target을 사용한다.
 on:
   pull_request_target:
-    types: [opened, synchronize, reopened, edited, ready_for_review]
+    types: [opened, synchronize, reopened, edited, ready_for_review, converted_to_draft, closed]
   issue_comment:
     types: [created, edited, deleted]
   pull_request_review:
@@ -17,7 +17,7 @@ permissions:
   contents: read
   pull-requests: read
   issues: read
-  statuses: write
+  checks: write
 
 concurrency:
   group: review-gate-${{ github.repository }}
@@ -26,8 +26,9 @@ concurrency:
 jobs:
   gate:
     if: >-
-      github.event_name != 'push' ||
-      github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+      (github.event_name != 'push' || github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) &&
+      (github.event_name != 'issue_comment' ||
+       (github.event.issue.pull_request && contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)))
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

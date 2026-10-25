@@ -152,7 +152,7 @@
 
 - 사용 여부: 기본 게이트 제공, AI 실행 연동은 프로젝트별 선택
 - 추가 API 과금: 사용 안 함
-- 게이트 설정 기준: `.ai/review-config.json` (실행 코드가 읽는 유일한 설정)
+- 게이트 가변 설정: `.ai/review-config.json` (위험 경로·중간 위험 정책·사람 구현 시 기본 reviewer). 검사 이름 `independent-review`와 GitHub Actions 앱 출처 검증은 고정 계약이다.
 - 리뷰 도구·신뢰할 작성자 식별 정보: 프로젝트에서 확정, 기본값은 사람의 결과 확인
 - 게이트 완료 기준: 최신 fingerprint·보고서 근거·관리자 확인, critical/high/medium 미해결 0건
 - AI 요청 방식: 프로젝트에서 확정, 게이트에서 자동 호출하지 않음

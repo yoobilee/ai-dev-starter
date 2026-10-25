@@ -10,6 +10,8 @@
 ## 1. 도입 시 프로젝트 설정
 
 - 기본 게이트의 실행 설정은 `.ai/review-config.json` 하나에서 관리한다. `AGENTS.md`의 설명과 PR 라벨은 실행 설정을 대체하지 않는다.
+- 가변 설정은 위험 경로·중간 위험 검증 여부와 사람 구현 시 기본 reviewer다. 검사 이름 `independent-review`는 고정 계약이고, 결과는 GitHub Actions 앱의 check run으로 게시한다. 동명 commit status를 통과 근거로 사용하지 않는다.
+- 병합 도구는 실제 workflow 출처·검사 fingerprint를 확인하고 현재 리뷰 근거를 재평가한다. GitHub의 strict required checks와 게시 앱 고정을 함께 검증하며, 미설정·조회 실패는 병합 차단이다. 브라우저 병합은 같은 확인을 사람이 수행한다.
 - `.ai/checklists/review-gate-setup.md`에 따라 필수 상태 검사와 관리자 확인 절차를 설정한다. 게이트는 기본 브랜치 코드만 실행하고, PR 코드나 설치·테스트 명령을 실행하지 않는다.
 - 게이트는 AI를 요청하지 않으며 API 키·OAuth 토큰을 사용하지 않는다. API 과금 방식과 자동 병합은 기본 구성에 포함하지 않는다.
 - Claude 구현은 Codex, Codex 구현은 Claude, 사람이 구현한 경우 기본 Codex를 선택한다. 구현자 불명확은 필수 독립 검증 완료로 인정하지 않는다.
